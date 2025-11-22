@@ -14,93 +14,113 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.control.TreeItem?>
 
+<?import javafx.scene.control.TextField?>
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.emts.vitrualcompiler.HelloController">
 
-    <!-- HEADER / TOP SECTION -->
+    <!-- MENU BAR -->
     <top>
-        <VBox styleClass="main-header" spacing="0">
-            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 12px; -fx-background-color: #2d2d2d;">
+        <!-- Toolbar/Header -->
+        <VBox spacing="0">
+            <!-- Main Toolbar -->
+            <HBox styleClass="main-toolbar" alignment="CENTER_LEFT" spacing="0">
+                <!-- Logo/Title Section -->
+                <Label text="COMPILER" styleClass="app-title" />
+                <Label text="IDE" styleClass="app-subtitle" />
 
-                <!-- Title -->
-                <Label text="Compiler IDE" styleClass="main-header-title" />
-
-                <Separator orientation="VERTICAL" styleClass="header-separator" />
-
-                <!-- File Operations Buttons -->
-                <Button text="➕ New" styleClass="file-button, toolbar-button" onAction="#handleNew" />
-                <Button text="📁 Open" styleClass="file-button, toolbar-button" onAction="#handleOpen" />
-                <Button text="💾 Save" styleClass="file-button, toolbar-button" onAction="#handleSave" />
-
-                <!-- Spacer -->
                 <Region HBox.hgrow="ALWAYS" />
 
-                <!-- Execution Buttons -->
-                <Button text="▶️ Run" styleClass="run-button, toolbar-button" onAction="#handleRun" />
-                <Button text="⏹️ Stop" styleClass="stop-button, toolbar-button" onAction="#handleStop" />
-                <Button text="🔄 Clear" styleClass="clear-button, toolbar-button" onAction="#handleClear" />
+                <!-- Right Side Controls -->
+                <HBox spacing="8" alignment="CENTER" style="-fx-padding: 0 16px;">
+                    <Button text="☀️" styleClass="theme-toggle" onAction="#toggleTheme" />
+                    <Button text="⚙️" styleClass="settings-button" onAction="#openSettings" />
+                </HBox>
+            </HBox>
+
+            <!-- Editor Toolbar -->
+            <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="8">
+                <padding>
+                    <Insets top="8" right="16" bottom="8" left="16"/>
+                </padding>
+
+                <!-- File Operations -->
+                <Button text="📄 New" styleClass="toolbar-button-small" onAction="#handleNew" />
+                <Button text="📁 Open" styleClass="toolbar-button-small" onAction="#handleOpen" />
+                <Button text="💾 Save" styleClass="toolbar-button-small" onAction="#handleSave" />
+
+                <Separator orientation="VERTICAL" styleClass="toolbar-separator" />
+
+                <!-- Build & Run -->
+                <Button text="🔨 Build" styleClass="build-button" onAction="#handleBuild" />
+                <Button text="▶️ Run" styleClass="run-button" onAction="#handleRun" />
+                <Button text="🐛 Debug" styleClass="debug-button" onAction="#handleDebug" />
+                <Button text="⏹️ Stop" styleClass="stop-button" onAction="#handleStop" />
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <!-- Search -->
+                <TextField fx:id="searchField" styleClass="search-field" promptText="Search..." />
             </HBox>
         </VBox>
     </top>
 
-    <!-- MAIN CONTENT AREA -->
+    <!-- MAIN CONTENT -->
     <center>
-        <SplitPane dividerPositions="0.5" styleClass="main-content">
+        <SplitPane dividerPositions="0.7" styleClass="main-splitter">
+            <!-- Left: Editor Area -->
+            <VBox spacing="0">
+                <!-- File Tabs -->
+                <TabPane fx:id="editorTabs" tabClosingPolicy="ALL_TABS" styleClass="file-tabs">
+                    <Tab text="main.java" closable="true" styleClass="editor-tab">
+                        <VBox spacing="8" style="-fx-padding: 0;">
+                            <!-- Line Numbers + Code Editor -->
+                            <HBox spacing="0" VBox.vgrow="ALWAYS">
+                                <!-- Line Numbers -->
+                                <TextArea fx:id="lineNumbers"
+                                          editable="false"
+                                          wrapText="false"
+                                          styleClass="line-numbers"
+                                          prefWidth="50" />
 
-            <!-- LEFT SIDE: CODE EDITOR -->
-            <VBox spacing="8" styleClass="code-editor-section">
-                <Label text="📝 Source Code" styleClass="section-label" />
+                                <!-- Code Editor -->
+                                <TextArea fx:id="codeEditor"
+                                          wrapText="false"
+                                          styleClass="code-editor"
+                                          HBox.hgrow="ALWAYS"
+                                          VBox.vgrow="ALWAYS">
+                                    <font>
+                                        <Font name="JetBrains Mono" size="13" />
+                                    </font>
+                                </TextArea>
+                            </HBox>
 
-                <TextArea
-                        fx:id="codeEditor"
-                        wrapText="true"
-                        styleClass="code-editor"
-                        VBox.vgrow="ALWAYS">
-                    <font>
-                        <Font name="JetBrains Mono" size="13" />
-                    </font>
-                </TextArea>
-
-                <HBox spacing="5" alignment="CENTER_RIGHT">
-                    <Label fx:id="lineCountLabel" text="Lines: 0 | Chars: 0" styleClass="info-label" />
-                </HBox>
+                            <!-- Status Bar for Editor -->
+                            <HBox styleClass="editor-status-bar">
+                                <Label fx:id="lineCountLabel" text="Line 1, Column 1" styleClass="status-text" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label fx:id="encodingLabel" text="UTF-8" styleClass="status-text" />
+                                <Label text="LF" styleClass="status-text" />
+                            </HBox>
+                        </VBox>
+                    </Tab>
+                </TabPane>
             </VBox>
 
-            <!-- RIGHT SIDE: OUTPUT TABS -->
-            <VBox spacing="8" styleClass="output-section">
-
-                <!-- Tab Pane -->
-                <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="tab-pane">
-
-                    <!-- Compilation Tab -->
-                    <Tab text="🔍 Compilation" closable="false" styleClass="tab">
-                        <VBox spacing="8" style="-fx-padding: 12px;">
-                            <Label text="Compilation Process:" styleClass="section-label" />
-                            <TextArea
-                                    fx:id="compilationOutput"
-                                    wrapText="true"
-                                    editable="false"
-                                    styleClass="compilation-output, output-area"
-                                    VBox.vgrow="ALWAYS">
-                                <font>
-                                    <Font name="JetBrains Mono" size="12" />
-                                </font>
-                            </TextArea>
-                            <ProgressBar fx:id="compilationProgress" progress="0" styleClass="progress-bar" prefHeight="8" />
-                        </VBox>
-                    </Tab>
-
-                    <!-- Tokens Tab -->
-                    <Tab text="⚙️ Tokens" closable="false" styleClass="tab">
-                        <VBox spacing="8" style="-fx-padding: 12px;">
-                            <Label text="Lexical Analysis:" styleClass="section-label" />
-                            <TextArea
-                                    fx:id="tokensOutput"
-                                    wrapText="true"
-                                    editable="false"
-                                    styleClass="tokens-output, output-area"
-                                    VBox.vgrow="ALWAYS">
+            <!-- Right: Output Panel -->
+            <VBox spacing="0" styleClass="output-panel">
+                <!-- Output Tabs -->
+                <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="output-tabs">
+                    <!-- Console Output -->
+                    <Tab text="🖥️ Console" closable="false" styleClass="output-tab">
+                        <VBox spacing="6" style="-fx-padding: 12px;">
+                            <TextArea fx:id="programOutput"
+                                      wrapText="true"
+                                      editable="false"
+                                      styleClass="console-output"
+                                      VBox.vgrow="ALWAYS">
                                 <font>
                                     <Font name="JetBrains Mono" size="12" />
                                 </font>
@@ -108,52 +128,67 @@
                         </VBox>
                     </Tab>
 
-                    <!-- AST Tab -->
-                    <Tab text="🌳 AST" closable="false" styleClass="tab">
-                        <VBox spacing="8" style="-fx-padding: 12px;">
-                            <Label text="Abstract Syntax Tree:" styleClass="section-label" />
-                            <TextArea
-                                    fx:id="astOutput"
-                                    wrapText="true"
-                                    editable="false"
-                                    styleClass="ast-output, output-area"
-                                    VBox.vgrow="ALWAYS">
+                    <!-- Build Output -->
+                    <Tab text="🔨 Build" closable="false" styleClass="output-tab">
+                        <VBox spacing="6" style="-fx-padding: 12px;">
+                            <ProgressBar fx:id="compilationProgress" progress="0" styleClass="build-progress" prefHeight="4" />
+                            <TextArea fx:id="compilationOutput"
+                                      wrapText="true"
+                                      editable="false"
+                                      styleClass="build-output"
+                                      VBox.vgrow="ALWAYS">
                                 <font>
-                                    <Font name="JetBrains Mono" size="12" />
+                                    <Font name="JetBrains Mono" size="11" />
                                 </font>
                             </TextArea>
                         </VBox>
                     </Tab>
 
-                    <!-- Output Tab -->
-                    <Tab text="✅ Output" closable="false" styleClass="tab">
-                        <VBox spacing="8" style="-fx-padding: 12px;">
-                            <Label text="Program Output:" styleClass="section-label" />
-                            <TextArea
-                                    fx:id="programOutput"
-                                    wrapText="true"
-                                    editable="false"
-                                    styleClass="program-output, output-area"
-                                    VBox.vgrow="ALWAYS">
+                    <!-- Compilation Details -->
+                    <Tab text="⚙️ Lexical" closable="false" styleClass="output-tab">
+                        <VBox spacing="6" style="-fx-padding: 12px;">
+                            <TextArea fx:id="tokensOutput"
+                                      wrapText="true"
+                                      editable="false"
+                                      styleClass="tokens-output"
+                                      VBox.vgrow="ALWAYS">
                                 <font>
-                                    <Font name="JetBrains Mono" size="12" />
+                                    <Font name="JetBrains Mono" size="11" />
                                 </font>
                             </TextArea>
                         </VBox>
                     </Tab>
 
-                    <!-- Errors Tab -->
-                    <Tab text="❌ Errors" closable="false" styleClass="tab">
-                        <VBox spacing="8" style="-fx-padding: 12px;">
-                            <Label text="Errors &amp; Warnings:" styleClass="section-label" />
-                            <TextArea
-                                    fx:id="errorsOutput"
-                                    wrapText="true"
-                                    editable="false"
-                                    styleClass="errors-output, output-area"
-                                    VBox.vgrow="ALWAYS">
+                    <!-- AST -->
+                    <Tab text="🌳 AST" closable="false" styleClass="output-tab">
+                        <VBox spacing="6" style="-fx-padding: 12px;">
+                            <TextArea fx:id="astOutput"
+                                      wrapText="true"
+                                      editable="false"
+                                      styleClass="ast-output"
+                                      VBox.vgrow="ALWAYS">
                                 <font>
-                                    <Font name="JetBrains Mono" size="12" />
+                                    <Font name="JetBrains Mono" size="11" />
+                                </font>
+                            </TextArea>
+                        </VBox>
+                    </Tab>
+
+                    <!-- Errors & Warnings -->
+                    <Tab text="❌ Problems" closable="false" styleClass="output-tab">
+                        <VBox spacing="6" style="-fx-padding: 12px;">
+                            <HBox spacing="12">
+                                <Button text="Errors (0)" styleClass="problem-filter-errors" />
+                                <Button text="Warnings (0)" styleClass="problem-filter-warnings" />
+                                <Button text="Info (0)" styleClass="problem-filter-info" />
+                            </HBox>
+                            <TextArea fx:id="errorsOutput"
+                                      wrapText="true"
+                                      editable="false"
+                                      styleClass="errors-output"
+                                      VBox.vgrow="ALWAYS">
+                                <font>
+                                    <Font name="JetBrains Mono" size="11" />
                                 </font>
                             </TextArea>
                         </VBox>
@@ -163,13 +198,16 @@
         </SplitPane>
     </center>
 
-    <!-- FOOTER / STATUS BAR -->
+    <!-- BOTTOM STATUS BAR -->
     <bottom>
-        <HBox styleClass="status-bar" spacing="15" alignment="CENTER_LEFT">
+        <HBox styleClass="bottom-status-bar">
             <Label fx:id="statusLabel" text="Ready" styleClass="status-label" />
             <Separator orientation="VERTICAL" styleClass="separator" />
-            <Label fx:id="timeLabel" text="Time: 0ms" styleClass="time-label" />
-            <Label fx:id="errorCountLabel" text="Errors: 0" styleClass="error-count-label" />
+            <Label fx:id="compilePhaseLabel" text="Idle" styleClass="phase-label" />
+            <Label fx:id="timeLabel" text="0ms" styleClass="time-label" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="errorCountLabel" text="Errors: 0" styleClass="error-status" />
+            <Label fx:id="warningCountLabel" text="Warnings: 0" styleClass="warning-status" />
         </HBox>
     </bottom>
 
