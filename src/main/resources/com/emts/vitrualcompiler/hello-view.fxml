@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.Region?>
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.emts.vitrualcompiler.HelloController">
+    <top>
+        <VBox style="-fx-background-color: #2d2d2d; -fx-padding: 10;" spacing="5">
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="Compiler IDE" style="-fx-text-fill: #61dafb; -fx-font-size: 18; -fx-font-weight: bold;" />
+                <Separator orientation="VERTICAL" />
+
+                <Button text="➕ New" style="-fx-padding: 8 15; -fx-font-size: 12; -fx-background-color: #264f78;" onAction="#handleNew" />
+                <Button text="📁 Open" style="-fx-padding: 8 15; -fx-font-size: 12; -fx-background-color: #264f78;" onAction="#handleOpen" />
+                <Button text="💾 Save" style="-fx-padding: 8 15; -fx-font-size: 12; -fx-background-color: #264f78;" onAction="#handleSave" />
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Button text="▶️ Run" style="-fx-padding: 10 20; -fx-font-size: 14; -fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#handleRun" />
+                <Button text="⏹️ Stop" style="-fx-padding: 10 20; -fx-font-size: 14; -fx-background-color: #dc3545;" onAction="#handleStop" />
+                <Button text="🔄 Clear" style="-fx-padding: 10 20; -fx-font-size: 14; -fx-background-color: #6c757d;" onAction="#handleClear" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <SplitPane dividerPositions="0.5" style="-fx-background-color: #1e1e1e;">
+            <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
+                <Label text="📝 Source Code" style="-fx-text-fill: #61dafb; -fx-font-size: 14; -fx-font-weight: bold;" />
+
+                <TextArea fx:id="codeEditor" wrapText="true" style="-fx-control-inner-background: #252526; -fx-text-fill: #d4d4d4; -fx-font-family: 'Courier New'; -fx-font-size: 12;" VBox.vgrow="ALWAYS">
+                    <font>
+                        <Font name="Courier New" size="12" />
+                    </font>
+                </TextArea>
+
+                <HBox spacing="5" alignment="CENTER_RIGHT">
+                    <Label fx:id="lineCountLabel" text="Lines: 0 | Chars: 0" style="-fx-text-fill: #858585; -fx-font-size: 11;" />
+                </HBox>
+            </VBox>
+
+            <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
+                <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: #1e1e1e;">
+                    <Tab text="🔍 Compilation" closable="false" style="-fx-text-fill: #61dafb;">
+                        <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
+                            <Label text="Compilation Process:" style="-fx-text-fill: #61dafb; -fx-font-weight: bold;" />
+                            <TextArea fx:id="compilationOutput" wrapText="true" editable="false" style="-fx-control-inner-background: #252526; -fx-text-fill: #d4d4d4; -fx-font-family: 'Courier New'; -fx-font-size: 11;" VBox.vgrow="ALWAYS">
+                                <font>
+                                    <Font name="Courier New" size="11" />
+                                </font>
+                            </TextArea>
+                            <ProgressBar fx:id="compilationProgress" progress="0" style="-fx-accent: #28a745;" />
+                        </VBox>
+                    </Tab>
+
+                    <Tab text="⚙️ Tokens" closable="false" style="-fx-text-fill: #61dafb;">
+                        <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
+                            <Label text="Lexical Analysis:" style="-fx-text-fill: #61dafb; -fx-font-weight: bold;" />
+                            <TextArea fx:id="tokensOutput" wrapText="true" editable="false" style="-fx-control-inner-background: #252526; -fx-text-fill: #d4d4d4; -fx-font-family: 'Courier New'; -fx-font-size: 11;" VBox.vgrow="ALWAYS">
+                                <font>
+                                    <Font name="Courier New" size="11" />
+                                </font>
+                            </TextArea>
+                        </VBox>
+                    </Tab>
+
+                    <Tab text="🌳 AST" closable="false" style="-fx-text-fill: #61dafb;">
+                        <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
+                            <Label text="Abstract Syntax Tree:" style="-fx-text-fill: #61dafb; -fx-font-weight: bold;" />
+                            <TextArea fx:id="astOutput" wrapText="true" editable="false" style="-fx-control-inner-background: #252526; -fx-text-fill: #d4d4d4; -fx-font-family: 'Courier New'; -fx-font-size: 11;" VBox.vgrow="ALWAYS">
+                                <font>
+                                    <Font name="Courier New" size="11" />
+                                </font>
+                            </TextArea>
+                        </VBox>
+                    </Tab>
+
+                    <Tab text="✅ Output" closable="false" style="-fx-text-fill: #61dafb;">
+                        <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
+                            <Label text="Program Output:" style="-fx-text-fill: #61dafb; -fx-font-weight: bold;" />
+                            <TextArea fx:id="programOutput" wrapText="true" editable="false" style="-fx-control-inner-background: #252526; -fx-text-fill: #00ff00; -fx-font-family: 'Courier New'; -fx-font-size: 11;" VBox.vgrow="ALWAYS">
+                                <font>
+                                    <Font name="Courier New" size="11" />
+                                </font>
+                            </TextArea>
+                        </VBox>
+                    </Tab>
+
+                    <Tab text="❌ Errors" closable="false" style="-fx-text-fill: #61dafb;">
+                        <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
+                            <Label text="Errors &amp; Warnings:" style="-fx-text-fill: #61dafb; -fx-font-weight: bold;" />
+                            <TextArea fx:id="errorsOutput" wrapText="true" editable="false" style="-fx-control-inner-background: #252526; -fx-text-fill: #ff6b6b; -fx-font-family: 'Courier New'; -fx-font-size: 11;" VBox.vgrow="ALWAYS">
+                                <font>
+                                    <Font name="Courier New" size="11" />
+                                </font>
+                            </TextArea>
+                        </VBox>
+                    </Tab>
+                </TabPane>
+            </VBox>
+        </SplitPane>
+    </center>
+
+    <bottom>
+        <HBox style="-fx-background-color: #2d2d2d; -fx-padding: 8;" spacing="15" alignment="CENTER_LEFT">
+            <Label fx:id="statusLabel" text="Ready" style="-fx-text-fill: #61dafb; -fx-font-size: 12;" />
+            <Separator orientation="VERTICAL" />
+            <Label fx:id="timeLabel" text="Time: 0ms" style="-fx-text-fill: #858585; -fx-font-size: 11;" />
+            <Label fx:id="errorCountLabel" text="Errors: 0" style="-fx-text-fill: #ff6b6b; -fx-font-size: 11;" />
+        </HBox>
+    </bottom>
+</BorderPane>
