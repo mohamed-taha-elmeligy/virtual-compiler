@@ -1,259 +1,210 @@
 package com.emts.vitrualcompiler;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 
-import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 public class HelloController implements Initializable {
+    // UI Components
     @FXML private TextArea codeEditor;
     @FXML private TextArea compilationOutput;
     @FXML private TextArea tokensOutput;
     @FXML private TextArea astOutput;
     @FXML private TextArea programOutput;
     @FXML private TextArea errorsOutput;
-    @FXML private Label lineCountLabel;
+    @FXML private ProgressBar compilationProgress;
     @FXML private Label statusLabel;
     @FXML private Label timeLabel;
     @FXML private Label errorCountLabel;
-    @FXML private ProgressBar compilationProgress;
+    @FXML private Label lineCountLabel;
 
-    private Thread compilationThread;
-
+    /**
+     * تهيئة المكونات عند تحميل FXML
+     */
     @FXML
     public void initialize() {
-        // مراقبة التغييرات في code editor
-        codeEditor.textProperty().addListener((obs, oldVal, newVal) -> {
+        setupCodeEditor();
+        setupOutputAreas();
+        updateLineCount();
+    }
+
+    /**
+     * تهيئة محرر الأكواد مع مراقبة التغييرات
+     */
+    private void setupCodeEditor() {
+        // مراقبة التغييرات في محرر الأكواد
+        codeEditor.textProperty().addListener((observable, oldValue, newValue) -> {
             updateLineCount();
-            updateSyntaxHighlighting();
         });
 
-        // تعيين نص افتراضي للاختبار
-        codeEditor.setText("// اكتب الكود هنا\n" +
-                "void main() {\n" +
-                "    print(\"Hello World\");\n" +
-                "}");
+        // تفعيل الـ Wrapping
+        codeEditor.setWrapText(true);
     }
 
+    /**
+     * تهيئة منطقات الإخراج
+     */
+    private void setupOutputAreas() {
+        // تعطيل التعديل على جميع منطقات الإخراج
+        compilationOutput.setEditable(false);
+        tokensOutput.setEditable(false);
+        astOutput.setEditable(false);
+        programOutput.setEditable(false);
+        errorsOutput.setEditable(false);
+
+        // تفعيل الـ Wrapping
+        compilationOutput.setWrapText(true);
+        tokensOutput.setWrapText(true);
+        astOutput.setWrapText(true);
+        programOutput.setWrapText(true);
+        errorsOutput.setWrapText(true);
+    }
+
+    /**
+     * تحديث عدد الأسطر والأحرف
+     */
     private void updateLineCount() {
-        int lines = codeEditor.getText().split("\n").length;
-        int chars = codeEditor.getText().length();
-        lineCountLabel.setText("Lines: " + lines + " | Chars: " + chars);
+        String text = codeEditor.getText();
+        int lineCount = text.isEmpty() ? 1 : text.split("\n", -1).length;
+        int charCount = text.length();
+        lineCountLabel.setText(String.format("Lines: %d | Chars: %d", lineCount, charCount));
     }
 
-    private void updateSyntaxHighlighting() {
-        // هنا تقدر تضيف syntax highlighting logic
-        // أو تستخدم مكتبات زي RichTextFX
-    }
-
+    /**
+     * معالج زر "New" - ملف جديد
+     */
     @FXML
-    public void handleRun() {
-        if (compilationThread != null && compilationThread.isAlive()) {
-            showAlert("Compilation already running!");
+    private void handleNew() {
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("New File");
+        confirmation.setHeaderText("Create a new file?");
+        confirmation.setContentText("Do you want to create a new file?");
+
+        if (confirmation.showAndWait().orElse(ButtonType.NO) == ButtonType.OK) {
+            codeEditor.clear();
+            clearAllOutput();
+            statusLabel.setText("New file created");
+        }
+    }
+
+    /**
+     * معالج زر "Open" - فتح ملف
+     */
+    @FXML
+    private void handleOpen() {
+        statusLabel.setText("Open file functionality - To be implemented");
+        // TODO: تطبيق فتح الملف
+    }
+
+    /**
+     * معالج زر "Save" - حفظ الملف
+     */
+    @FXML
+    private void handleSave() {
+        statusLabel.setText("Save functionality - To be implemented");
+        // TODO: تطبيق حفظ الملف
+    }
+
+    /**
+     * معالج زر "Run" - تشغيل البرنامج
+     */
+    @FXML
+    private void handleRun() {
+        String code = codeEditor.getText();
+        if (code.trim().isEmpty()) {
+            statusLabel.setText("No code to compile");
+            errorCountLabel.setText("Errors: 1");
+            errorsOutput.setText("Error: Code editor is empty!");
             return;
         }
 
-        compilationThread = new Thread(() -> {
-            try {
-                statusLabel.setText("Running...");
-                compilationOutput.clear();
-                tokensOutput.clear();
-                astOutput.clear();
-                programOutput.clear();
-                errorsOutput.clear();
-                compilationProgress.setProgress(-1); // Indeterminate
+        statusLabel.setText("Compiling...");
+        compilationProgress.setProgress(0.3);
 
-                String sourceCode = codeEditor.getText();
-
-                // مرحلة 1: Lexical Analysis (Tokenization)
-                performLexicalAnalysis(sourceCode);
-
-                // مرحلة 2: Syntax Analysis (Parsing)
-                performSyntaxAnalysis(sourceCode);
-
-                // مرحلة 3: Semantic Analysis
-                performSemanticAnalysis(sourceCode);
-
-                // مرحلة 4: Code Generation & Execution
-                performCodeGeneration(sourceCode);
-
-                Platform.runLater(() -> {
-                    statusLabel.setText("Completed ✓");
-                    compilationProgress.setProgress(1.0);
-                });
-
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    errorsOutput.appendText("ERROR: " + e.getMessage() + "\n");
-                    statusLabel.setText("Failed ✗");
-                    compilationProgress.setProgress(0);
-                });
-            }
-        });
-
-        compilationThread.setDaemon(true);
-        compilationThread.start();
+        // محاكاة عملية الترجمة
+        simulateCompilation(code);
     }
 
-    private void performLexicalAnalysis(String sourceCode) {
-        Platform.runLater(() -> {
-            compilationOutput.appendText("[LEXICAL ANALYSIS] Tokenizing source code...\n");
-            compilationOutput.appendText("━".repeat(50) + "\n");
-        });
-
-        // محاكاة تحليل المفردات
-        String[] tokens = sourceCode.split("\\s+|[(){};,]");
-        StringBuilder tokenList = new StringBuilder();
-
-        for (String token : tokens) {
-            if (!token.isEmpty()) {
-                String type = getTokenType(token);
-                tokenList.append(String.format("%-20s -> %s\n", token, type));
-            }
-        }
-
-        Platform.runLater(() -> {
-            compilationOutput.appendText("[✓] Found " + tokens.length + " tokens\n\n");
-            tokensOutput.setText(tokenList.toString());
-            compilationProgress.setProgress(0.25);
-        });
-    }
-
-    private void performSyntaxAnalysis(String sourceCode) {
-        Platform.runLater(() -> {
-            compilationOutput.appendText("[SYNTAX ANALYSIS] Building parse tree...\n");
-            compilationOutput.appendText("━".repeat(50) + "\n");
-        });
-
-        // محاكاة بناء الشجرة
-        String ast = generateAST(sourceCode);
-
-        Platform.runLater(() -> {
-            compilationOutput.appendText("[✓] Syntax tree generated\n\n");
-            astOutput.setText(ast);
-            compilationProgress.setProgress(0.50);
-        });
-    }
-
-    private void performSemanticAnalysis(String sourceCode) {
-        Platform.runLater(() -> {
-            compilationOutput.appendText("[SEMANTIC ANALYSIS] Type checking & validation...\n");
-            compilationOutput.appendText("━".repeat(50) + "\n");
-        });
-
-        // محاكاة الفحص الدلالي
-        boolean hasErrors = sourceCode.contains("ERROR") || sourceCode.contains("error");
-
-        if (hasErrors) {
-            Platform.runLater(() -> {
-                compilationOutput.appendText("[⚠] Semantic errors found\n");
-                errorsOutput.setText("Semantic Error: Invalid operation\n");
-                errorCountLabel.setText("Errors: 1");
-            });
-        } else {
-            Platform.runLater(() -> {
-                compilationOutput.appendText("[✓] All semantic checks passed\n\n");
-                errorCountLabel.setText("Errors: 0");
-                compilationProgress.setProgress(0.75);
-            });
-        }
-    }
-
-    private void performCodeGeneration(String sourceCode) {
-        Platform.runLater(() -> {
-            compilationOutput.appendText("[CODE GENERATION] Generating executable code...\n");
-            compilationOutput.appendText("━".repeat(50) + "\n");
-
-            long startTime = System.currentTimeMillis();
-
-            // محاكاة التنفيذ
-            programOutput.appendText(">>> Program Output:\n");
-            programOutput.appendText("Hello World\n");
-            programOutput.appendText("Process completed successfully\n");
-
-            long endTime = System.currentTimeMillis();
-            long duration = endTime - startTime;
-
-            compilationOutput.appendText("[✓] Code generation completed\n");
-            compilationOutput.appendText("Execution time: " + duration + "ms\n");
-            timeLabel.setText("Time: " + duration + "ms");
-            compilationProgress.setProgress(1.0);
-        });
-    }
-
-    private String generateAST(String sourceCode) {
-        StringBuilder ast = new StringBuilder();
-        ast.append("Program\n");
-        ast.append("├── Function: main\n");
-        ast.append("│   ├── Return Type: void\n");
-        ast.append("│   └── Body\n");
-        ast.append("│       └── CallExpression: print\n");
-        ast.append("│           └── Argument: \"Hello World\"\n");
-        return ast.toString();
-    }
-
-    private String getTokenType(String token) {
-        if (token.matches("\\d+")) return "NUMBER";
-        if (token.matches("\".*\"")) return "STRING";
-        if (token.matches("void|int|string|bool")) return "KEYWORD";
-        if (token.matches("[(){};,]")) return "OPERATOR";
-        return "IDENTIFIER";
-    }
-
+    /**
+     * معالج زر "Stop" - إيقاف البرنامج
+     */
     @FXML
-    public void handleNew() {
-        codeEditor.clear();
-        statusLabel.setText("New file created");
+    private void handleStop() {
+        statusLabel.setText("Compilation stopped");
+        compilationProgress.setProgress(0);
     }
 
+    /**
+     * معالج زر "Clear" - مسح الإخراج
+     */
     @FXML
-    public void handleOpen() {
-        // يمكنك إضافة FileChooser هنا
-        statusLabel.setText("Open file dialog");
+    private void handleClear() {
+        clearAllOutput();
+        statusLabel.setText("Output cleared");
     }
 
-    @FXML
-    public void handleSave() {
-        try {
-            Files.write(Paths.get("code.txt"), codeEditor.getText().getBytes());
-            statusLabel.setText("File saved successfully");
-        } catch (IOException e) {
-            showAlert("Error saving file: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    public void handleStop() {
-        if (compilationThread != null && compilationThread.isAlive()) {
-            compilationThread.interrupt();
-            statusLabel.setText("Stopped");
-        }
-    }
-
-    @FXML
-    public void handleClear() {
+    /**
+     * مسح جميع منطقات الإخراج
+     */
+    private void clearAllOutput() {
         compilationOutput.clear();
         tokensOutput.clear();
         astOutput.clear();
         programOutput.clear();
         errorsOutput.clear();
-        statusLabel.setText("Cleared");
+        compilationProgress.setProgress(0);
+        errorCountLabel.setText("Errors: 0");
+        timeLabel.setText("Time: 0ms");
     }
 
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Info");
-        alert.setContentText(message);
-        alert.showAndWait();
+    /**
+     * محاكاة عملية الترجمة
+     */
+    private void simulateCompilation(String code) {
+        long startTime = System.currentTimeMillis();
+
+        // Compilation Output
+        compilationOutput.setText("Starting compilation...\n" +
+                "Lexical Analysis: OK\n" +
+                "Syntax Analysis: OK\n" +
+                "Semantic Analysis: OK\n" +
+                "Code Generation: OK");
+        compilationProgress.setProgress(0.5);
+
+        // Tokens Output
+        tokensOutput.setText("Tokens found:\n" +
+                "Token 1: IDENTIFIER (\"variable\")\n" +
+                "Token 2: ASSIGN (\"=\")\n" +
+                "Token 3: NUMBER (\"42\")\n" +
+                "Token 4: SEMICOLON (\";\")");
+        compilationProgress.setProgress(0.7);
+
+        // AST Output
+        astOutput.setText("Abstract Syntax Tree:\n" +
+                "Program\n" +
+                "├── Statement\n" +
+                "│   ├── Identifier: variable\n" +
+                "│   └── Value: 42\n");
+        compilationProgress.setProgress(0.9);
+
+        // Program Output
+        programOutput.setText("Program output:\n" +
+                "Hello from compiler!\n" +
+                "Variable value: 42\n" +
+                "Compilation successful!\n");
+
+        // Time calculation
+        long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+        timeLabel.setText("Time: " + executionTime + "ms");
+
+        // Final status
+        compilationProgress.setProgress(1.0);
+        statusLabel.setText("Compilation successful!");
+        errorCountLabel.setText("Errors: 0");
     }
 
 
@@ -268,6 +219,6 @@ public class HelloController implements Initializable {
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
+        // hello mohamed
     }
 }

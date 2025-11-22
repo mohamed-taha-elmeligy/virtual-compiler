@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
-
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.control.Separator?>
@@ -15,95 +14,146 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.layout.Region?>
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.emts.vitrualcompiler.HelloController">
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.emts.vitrualcompiler.HelloController">
+
+    <!-- HEADER / TOP SECTION -->
     <top>
-        <VBox style="-fx-background-color: #2d2d2d; -fx-padding: 10;" spacing="5">
-            <HBox alignment="CENTER_LEFT" spacing="10">
-                <Label text="Compiler IDE" style="-fx-text-fill: #61dafb; -fx-font-size: 18; -fx-font-weight: bold;" />
-                <Separator orientation="VERTICAL" />
+        <VBox styleClass="main-header" spacing="0">
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 12px; -fx-background-color: #2d2d2d;">
 
-                <Button text="➕ New" style="-fx-padding: 8 15; -fx-font-size: 12; -fx-background-color: #264f78;" onAction="#handleNew" />
-                <Button text="📁 Open" style="-fx-padding: 8 15; -fx-font-size: 12; -fx-background-color: #264f78;" onAction="#handleOpen" />
-                <Button text="💾 Save" style="-fx-padding: 8 15; -fx-font-size: 12; -fx-background-color: #264f78;" onAction="#handleSave" />
+                <!-- Title -->
+                <Label text="Compiler IDE" styleClass="main-header-title" />
 
+                <Separator orientation="VERTICAL" styleClass="header-separator" />
+
+                <!-- File Operations Buttons -->
+                <Button text="➕ New" styleClass="file-button, toolbar-button" onAction="#handleNew" />
+                <Button text="📁 Open" styleClass="file-button, toolbar-button" onAction="#handleOpen" />
+                <Button text="💾 Save" styleClass="file-button, toolbar-button" onAction="#handleSave" />
+
+                <!-- Spacer -->
                 <Region HBox.hgrow="ALWAYS" />
 
-                <Button text="▶️ Run" style="-fx-padding: 10 20; -fx-font-size: 14; -fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold;" onAction="#handleRun" />
-                <Button text="⏹️ Stop" style="-fx-padding: 10 20; -fx-font-size: 14; -fx-background-color: #dc3545;" onAction="#handleStop" />
-                <Button text="🔄 Clear" style="-fx-padding: 10 20; -fx-font-size: 14; -fx-background-color: #6c757d;" onAction="#handleClear" />
+                <!-- Execution Buttons -->
+                <Button text="▶️ Run" styleClass="run-button, toolbar-button" onAction="#handleRun" />
+                <Button text="⏹️ Stop" styleClass="stop-button, toolbar-button" onAction="#handleStop" />
+                <Button text="🔄 Clear" styleClass="clear-button, toolbar-button" onAction="#handleClear" />
             </HBox>
         </VBox>
     </top>
 
+    <!-- MAIN CONTENT AREA -->
     <center>
-        <SplitPane dividerPositions="0.5" style="-fx-background-color: #1e1e1e;">
-            <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
-                <Label text="📝 Source Code" style="-fx-text-fill: #61dafb; -fx-font-size: 14; -fx-font-weight: bold;" />
+        <SplitPane dividerPositions="0.5" styleClass="main-content">
 
-                <TextArea fx:id="codeEditor" wrapText="true" style="-fx-control-inner-background: #252526; -fx-text-fill: #d4d4d4; -fx-font-family: 'Courier New'; -fx-font-size: 12;" VBox.vgrow="ALWAYS">
+            <!-- LEFT SIDE: CODE EDITOR -->
+            <VBox spacing="8" styleClass="code-editor-section">
+                <Label text="📝 Source Code" styleClass="section-label" />
+
+                <TextArea
+                        fx:id="codeEditor"
+                        wrapText="true"
+                        styleClass="code-editor"
+                        VBox.vgrow="ALWAYS">
                     <font>
-                        <Font name="Courier New" size="12" />
+                        <Font name="JetBrains Mono" size="13" />
                     </font>
                 </TextArea>
 
                 <HBox spacing="5" alignment="CENTER_RIGHT">
-                    <Label fx:id="lineCountLabel" text="Lines: 0 | Chars: 0" style="-fx-text-fill: #858585; -fx-font-size: 11;" />
+                    <Label fx:id="lineCountLabel" text="Lines: 0 | Chars: 0" styleClass="info-label" />
                 </HBox>
             </VBox>
 
-            <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
-                <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-background-color: #1e1e1e;">
-                    <Tab text="🔍 Compilation" closable="false" style="-fx-text-fill: #61dafb;">
-                        <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
-                            <Label text="Compilation Process:" style="-fx-text-fill: #61dafb; -fx-font-weight: bold;" />
-                            <TextArea fx:id="compilationOutput" wrapText="true" editable="false" style="-fx-control-inner-background: #252526; -fx-text-fill: #d4d4d4; -fx-font-family: 'Courier New'; -fx-font-size: 11;" VBox.vgrow="ALWAYS">
+            <!-- RIGHT SIDE: OUTPUT TABS -->
+            <VBox spacing="8" styleClass="output-section">
+
+                <!-- Tab Pane -->
+                <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="tab-pane">
+
+                    <!-- Compilation Tab -->
+                    <Tab text="🔍 Compilation" closable="false" styleClass="tab">
+                        <VBox spacing="8" style="-fx-padding: 12px;">
+                            <Label text="Compilation Process:" styleClass="section-label" />
+                            <TextArea
+                                    fx:id="compilationOutput"
+                                    wrapText="true"
+                                    editable="false"
+                                    styleClass="compilation-output, output-area"
+                                    VBox.vgrow="ALWAYS">
                                 <font>
-                                    <Font name="Courier New" size="11" />
+                                    <Font name="JetBrains Mono" size="12" />
                                 </font>
                             </TextArea>
-                            <ProgressBar fx:id="compilationProgress" progress="0" style="-fx-accent: #28a745;" />
+                            <ProgressBar fx:id="compilationProgress" progress="0" styleClass="progress-bar" prefHeight="8" />
                         </VBox>
                     </Tab>
 
-                    <Tab text="⚙️ Tokens" closable="false" style="-fx-text-fill: #61dafb;">
-                        <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
-                            <Label text="Lexical Analysis:" style="-fx-text-fill: #61dafb; -fx-font-weight: bold;" />
-                            <TextArea fx:id="tokensOutput" wrapText="true" editable="false" style="-fx-control-inner-background: #252526; -fx-text-fill: #d4d4d4; -fx-font-family: 'Courier New'; -fx-font-size: 11;" VBox.vgrow="ALWAYS">
+                    <!-- Tokens Tab -->
+                    <Tab text="⚙️ Tokens" closable="false" styleClass="tab">
+                        <VBox spacing="8" style="-fx-padding: 12px;">
+                            <Label text="Lexical Analysis:" styleClass="section-label" />
+                            <TextArea
+                                    fx:id="tokensOutput"
+                                    wrapText="true"
+                                    editable="false"
+                                    styleClass="tokens-output, output-area"
+                                    VBox.vgrow="ALWAYS">
                                 <font>
-                                    <Font name="Courier New" size="11" />
-                                </font>
-                            </TextArea>
-                        </VBox>
-                    </Tab>
-
-                    <Tab text="🌳 AST" closable="false" style="-fx-text-fill: #61dafb;">
-                        <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
-                            <Label text="Abstract Syntax Tree:" style="-fx-text-fill: #61dafb; -fx-font-weight: bold;" />
-                            <TextArea fx:id="astOutput" wrapText="true" editable="false" style="-fx-control-inner-background: #252526; -fx-text-fill: #d4d4d4; -fx-font-family: 'Courier New'; -fx-font-size: 11;" VBox.vgrow="ALWAYS">
-                                <font>
-                                    <Font name="Courier New" size="11" />
-                                </font>
-                            </TextArea>
-                        </VBox>
-                    </Tab>
-
-                    <Tab text="✅ Output" closable="false" style="-fx-text-fill: #61dafb;">
-                        <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
-                            <Label text="Program Output:" style="-fx-text-fill: #61dafb; -fx-font-weight: bold;" />
-                            <TextArea fx:id="programOutput" wrapText="true" editable="false" style="-fx-control-inner-background: #252526; -fx-text-fill: #00ff00; -fx-font-family: 'Courier New'; -fx-font-size: 11;" VBox.vgrow="ALWAYS">
-                                <font>
-                                    <Font name="Courier New" size="11" />
+                                    <Font name="JetBrains Mono" size="12" />
                                 </font>
                             </TextArea>
                         </VBox>
                     </Tab>
 
-                    <Tab text="❌ Errors" closable="false" style="-fx-text-fill: #61dafb;">
-                        <VBox spacing="5" style="-fx-padding: 10; -fx-background-color: #1e1e1e;">
-                            <Label text="Errors &amp; Warnings:" style="-fx-text-fill: #61dafb; -fx-font-weight: bold;" />
-                            <TextArea fx:id="errorsOutput" wrapText="true" editable="false" style="-fx-control-inner-background: #252526; -fx-text-fill: #ff6b6b; -fx-font-family: 'Courier New'; -fx-font-size: 11;" VBox.vgrow="ALWAYS">
+                    <!-- AST Tab -->
+                    <Tab text="🌳 AST" closable="false" styleClass="tab">
+                        <VBox spacing="8" style="-fx-padding: 12px;">
+                            <Label text="Abstract Syntax Tree:" styleClass="section-label" />
+                            <TextArea
+                                    fx:id="astOutput"
+                                    wrapText="true"
+                                    editable="false"
+                                    styleClass="ast-output, output-area"
+                                    VBox.vgrow="ALWAYS">
                                 <font>
-                                    <Font name="Courier New" size="11" />
+                                    <Font name="JetBrains Mono" size="12" />
+                                </font>
+                            </TextArea>
+                        </VBox>
+                    </Tab>
+
+                    <!-- Output Tab -->
+                    <Tab text="✅ Output" closable="false" styleClass="tab">
+                        <VBox spacing="8" style="-fx-padding: 12px;">
+                            <Label text="Program Output:" styleClass="section-label" />
+                            <TextArea
+                                    fx:id="programOutput"
+                                    wrapText="true"
+                                    editable="false"
+                                    styleClass="program-output, output-area"
+                                    VBox.vgrow="ALWAYS">
+                                <font>
+                                    <Font name="JetBrains Mono" size="12" />
+                                </font>
+                            </TextArea>
+                        </VBox>
+                    </Tab>
+
+                    <!-- Errors Tab -->
+                    <Tab text="❌ Errors" closable="false" styleClass="tab">
+                        <VBox spacing="8" style="-fx-padding: 12px;">
+                            <Label text="Errors &amp; Warnings:" styleClass="section-label" />
+                            <TextArea
+                                    fx:id="errorsOutput"
+                                    wrapText="true"
+                                    editable="false"
+                                    styleClass="errors-output, output-area"
+                                    VBox.vgrow="ALWAYS">
+                                <font>
+                                    <Font name="JetBrains Mono" size="12" />
                                 </font>
                             </TextArea>
                         </VBox>
@@ -113,12 +163,14 @@
         </SplitPane>
     </center>
 
+    <!-- FOOTER / STATUS BAR -->
     <bottom>
-        <HBox style="-fx-background-color: #2d2d2d; -fx-padding: 8;" spacing="15" alignment="CENTER_LEFT">
-            <Label fx:id="statusLabel" text="Ready" style="-fx-text-fill: #61dafb; -fx-font-size: 12;" />
-            <Separator orientation="VERTICAL" />
-            <Label fx:id="timeLabel" text="Time: 0ms" style="-fx-text-fill: #858585; -fx-font-size: 11;" />
-            <Label fx:id="errorCountLabel" text="Errors: 0" style="-fx-text-fill: #ff6b6b; -fx-font-size: 11;" />
+        <HBox styleClass="status-bar" spacing="15" alignment="CENTER_LEFT">
+            <Label fx:id="statusLabel" text="Ready" styleClass="status-label" />
+            <Separator orientation="VERTICAL" styleClass="separator" />
+            <Label fx:id="timeLabel" text="Time: 0ms" styleClass="time-label" />
+            <Label fx:id="errorCountLabel" text="Errors: 0" styleClass="error-count-label" />
         </HBox>
     </bottom>
+
 </BorderPane>
