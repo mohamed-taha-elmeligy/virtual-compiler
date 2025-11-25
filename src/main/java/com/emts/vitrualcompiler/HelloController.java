@@ -1,25 +1,32 @@
 package com.emts.vitrualcompiler;
 
+import com.emts.vitrualcompiler.exceptions.CompilerException;
+import com.emts.vitrualcompiler.helper.Token;
+import com.emts.vitrualcompiler.services.*;
+import com.emts.vitrualcompiler.syntax.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.geometry.Bounds;
 import java.net.URL;
-import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
+
+// Import Classes من SimpleCompiler
+import java.util.List;
 
 public class HelloController implements Initializable {
     // UI Components - Main
     @FXML private TextArea codeEditor;
     @FXML private TextArea lineNumbers;
     @FXML private TabPane editorTabs;
-    @FXML private TextField searchField;
 
     // Output Components
     @FXML private TextArea compilationOutput;
     @FXML private TextArea tokensOutput;
+    @FXML private TextArea tokensOutput1;      // Symbol Table
+    @FXML private TextArea tokensOutput11;     // Syntax (AST)
+    @FXML private TextArea tokensOutput111;    // Semantic
+    @FXML private TextArea tokensOutput1111;   // Intermediate (IR)
     @FXML private TextArea astOutput;
     @FXML private TextArea programOutput;
     @FXML private TextArea errorsOutput;
@@ -35,6 +42,9 @@ public class HelloController implements Initializable {
     @FXML private Label encodingLabel;
 
     private boolean isCompiling = false;
+    private List<Token> tokens;
+    private Program ast;
+    private List<IRInstruction> ir;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -43,22 +53,16 @@ public class HelloController implements Initializable {
         setupLineNumbers();
     }
 
-    /**
-     * تهيئة محرر الأكواد مع المراقبة
-     */
     private void setupCodeEditor() {
-        // مراقبة التغييرات
         codeEditor.textProperty().addListener((observable, oldValue, newValue) -> {
             updateLineNumbers();
             updateCursorPosition();
         });
 
-        // مراقبة موضع المؤشر
         codeEditor.caretPositionProperty().addListener((obs, oldVal, newVal) -> {
             updateCursorPosition();
         });
 
-        // معالجة Tab كـ 4 مسافات
         codeEditor.setOnKeyPressed(event -> {
             if (event.getCode().toString().equals("TAB")) {
                 codeEditor.insertText(codeEditor.getCaretPosition(), "    ");
@@ -69,17 +73,11 @@ public class HelloController implements Initializable {
         codeEditor.setWrapText(false);
     }
 
-    /**
-     * تهيئة أرقام الأسطر
-     */
     private void setupLineNumbers() {
         lineNumbers.setEditable(false);
         lineNumbers.setStyle("-fx-control-inner-background: #2d2f31;");
     }
 
-    /**
-     * تحديث أرقام الأسطر
-     */
     private void updateLineNumbers() {
         String code = codeEditor.getText();
         int lines = code.isEmpty() ? 1 : code.split("\n", -1).length;
@@ -91,9 +89,6 @@ public class HelloController implements Initializable {
         lineNumbers.setText(lineStr.toString());
     }
 
-    /**
-     * تحديث موضع المؤشر
-     */
     private void updateCursorPosition() {
         String text = codeEditor.getText();
         int pos = codeEditor.getCaretPosition();
@@ -104,18 +99,17 @@ public class HelloController implements Initializable {
         lineCountLabel.setText(String.format("Line %d, Column %d", line, column));
     }
 
-    /**
-     * تهيئة منطقات الإخراج
-     */
     private void setupOutputAreas() {
         compilationOutput.setEditable(false);
         tokensOutput.setEditable(false);
+        tokensOutput1.setEditable(false);
+        tokensOutput11.setEditable(false);
+        tokensOutput111.setEditable(false);
+        tokensOutput1111.setEditable(false);
         astOutput.setEditable(false);
         programOutput.setEditable(false);
         errorsOutput.setEditable(false);
     }
-
-    // ===== HANDLER METHODS =====
 
     @FXML
     private void handleNew() {
@@ -142,26 +136,12 @@ public class HelloController implements Initializable {
     }
 
     @FXML
-    private void handleBuild() {
-        if (isCompiling) {
-            statusLabel.setText("Already compiling...");
-            return;
-        }
-        compileCode(false);
-    }
-
-    @FXML
     private void handleRun() {
         if (isCompiling) {
             statusLabel.setText("Already compiling...");
             return;
         }
         compileCode(true);
-    }
-
-    @FXML
-    private void handleDebug() {
-        statusLabel.setText("Debug mode - To be implemented");
     }
 
     @FXML
@@ -172,22 +152,6 @@ public class HelloController implements Initializable {
         compilePhaseLabel.setText("Idle");
     }
 
-    @FXML
-    private void toggleTheme() {
-        // يمكن إضافة تبديل Theme هنا
-        statusLabel.setText("Theme toggle - To be implemented");
-    }
-
-    @FXML
-    private void openSettings() {
-        statusLabel.setText("Settings - To be implemented");
-    }
-
-    // ===== COMPILATION METHODS =====
-
-    /**
-     * بدء عملية الترجمة
-     */
     private void compileCode(boolean runAfterCompile) {
         String code = codeEditor.getText();
 
@@ -203,13 +167,13 @@ public class HelloController implements Initializable {
         warningCountLabel.setText("Warnings: 0");
         compilationProgress.setProgress(0);
 
-        // تشغيل الترجمة في thread منفصل
         new Thread(() -> {
             try {
                 performCompilation(code, runAfterCompile);
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     errorsOutput.setText("Internal Error: " + e.getMessage());
+                    e.printStackTrace();
                     statusLabel.setText("Compilation failed");
                     isCompiling = false;
                 });
@@ -217,193 +181,214 @@ public class HelloController implements Initializable {
         }).start();
     }
 
-    /**
-     * تنفيذ عملية الترجمة مع المراحل
-     */
     private void performCompilation(String code, boolean runAfterCompile) {
         long startTime = System.currentTimeMillis();
 
-        // مرحلة 1: Lexical Analysis (Tokenization)
-        Platform.runLater(() -> {
-            compilePhaseLabel.setText("Lexical Analysis");
-            compilationProgress.setProgress(0.2);
-            compilationOutput.appendText("[10:00:00] Starting lexical analysis...\n");
-        });
-        pause(800);
-        performLexicalAnalysis(code);
+        try {
+            // ========== Phase 1: Lexical Analysis ==========
+            Platform.runLater(() -> {
+                compilePhaseLabel.setText("Lexical Analysis");
+                compilationProgress.setProgress(0.15);
+                compilationOutput.appendText("[Phase 1] Starting Lexical Analysis...\n");
+            });
+            pause(500);
 
-        // مرحلة 2: Syntax Analysis (Parsing)
-        Platform.runLater(() -> {
-            compilePhaseLabel.setText("Syntax Analysis");
-            compilationProgress.setProgress(0.4);
-            compilationOutput.appendText("[10:00:01] Starting syntax analysis...\n");
-        });
-        pause(1000);
-        performSyntaxAnalysis(code);
+            Lexer lexer = new Lexer(code);
+            tokens = lexer.tokenize();
 
-        // مرحلة 3: Semantic Analysis
-        Platform.runLater(() -> {
-            compilePhaseLabel.setText("Semantic Analysis");
-            compilationProgress.setProgress(0.6);
-            compilationOutput.appendText("[10:00:02] Starting semantic analysis...\n");
-        });
-        pause(800);
-        performSemanticAnalysis(code);
+            Platform.runLater(() -> {
+                StringBuilder tokenOutput = new StringBuilder("=== TOKENS ===\n\n");
+                for (Token t : tokens) {
+                    if (t.type != Token.Type.EOF) {
+                        tokenOutput.append(t).append("\n");
+                    }
+                }
+                tokensOutput.setText(tokenOutput.toString());
+                compilationOutput.appendText("  ✓ Lexical analysis completed\n");
+                compilationOutput.appendText("  • Tokens generated: " + (tokens.size() - 1) + "\n\n");
+            });
+            pause(500);
 
-        // مرحلة 4: Code Generation
-        Platform.runLater(() -> {
-            compilePhaseLabel.setText("Code Generation");
-            compilationProgress.setProgress(0.8);
-            compilationOutput.appendText("[10:00:03] Generating code...\n");
-        });
-        pause(600);
-        performCodeGeneration(code);
+            // ========== Phase 2: Syntax Analysis ==========
+            Platform.runLater(() -> {
+                compilePhaseLabel.setText("Syntax Analysis");
+                compilationProgress.setProgress(0.30);
+                compilationOutput.appendText("[Phase 2] Starting Syntax Analysis...\n");
+            });
+            pause(500);
 
-        // مرحلة 5: Linking
-        Platform.runLater(() -> {
-            compilePhaseLabel.setText("Linking");
-            compilationProgress.setProgress(0.95);
-            compilationOutput.appendText("[10:00:04] Linking object files...\n");
-        });
-        pause(500);
+            Parser parser = new Parser(tokens);
+            ast = parser.parse();
 
-        // الانتهاء
-        long endTime = System.currentTimeMillis();
-        long executionTime = endTime - startTime;
+            Platform.runLater(() -> {
+                tokensOutput11.setText("=== ABSTRACT SYNTAX TREE ===\n\n" + printAST(ast, 0));
+                compilationOutput.appendText("  ✓ Syntax analysis completed\n");
+                compilationOutput.appendText("  • AST nodes created\n\n");
+            });
+            pause(500);
 
-        Platform.runLater(() -> {
-            compilationProgress.setProgress(1.0);
-            compilationOutput.appendText("[10:00:05] Build completed successfully!\n");
-            timeLabel.setText(executionTime + "ms");
+            // ========== Phase 3: Semantic Analysis ==========
+            Platform.runLater(() -> {
+                compilePhaseLabel.setText("Semantic Analysis");
+                compilationProgress.setProgress(0.45);
+                compilationOutput.appendText("[Phase 3] Starting Semantic Analysis...\n");
+            });
+            pause(500);
 
+            SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
+            semanticAnalyzer.analyze(ast);
+
+            Platform.runLater(() -> {
+                tokensOutput111.setText("=== SEMANTIC ANALYSIS ===\n\n✓ Type checking: PASSED\n✓ Variable declarations: OK\n✓ Scope analysis: OK");
+                compilationOutput.appendText("  ✓ Semantic analysis completed\n");
+                compilationOutput.appendText("  • No errors detected\n\n");
+            });
+            pause(500);
+
+            // ========== Phase 4: Intermediate Representation ==========
+            Platform.runLater(() -> {
+                compilePhaseLabel.setText("Code Generation (IR)");
+                compilationProgress.setProgress(0.60);
+                compilationOutput.appendText("[Phase 4] Generating Intermediate Representation...\n");
+            });
+            pause(500);
+
+            IRGenerator irGenerator = new IRGenerator();
+            irGenerator.generate(ast);
+            ir = irGenerator.getInstructions();
+
+            Platform.runLater(() -> {
+                StringBuilder irOutput = new StringBuilder("=== INTERMEDIATE REPRESENTATION (Three-Address Code) ===\n\n");
+                for (int i = 0; i < ir.size(); i++) {
+                    irOutput.append(String.format("%2d: %s\n", i, ir.get(i)));
+                }
+                tokensOutput1111.setText(irOutput.toString());
+                compilationOutput.appendText("  ✓ IR generation completed\n");
+                compilationOutput.appendText("  • Instructions generated: " + ir.size() + "\n\n");
+            });
+            pause(500);
+
+            // ========== Phase 5: Bytecode Generation ==========
+            Platform.runLater(() -> {
+                compilePhaseLabel.setText("Bytecode Generation");
+                compilationProgress.setProgress(0.75);
+                compilationOutput.appendText("[Phase 5] Generating Bytecode...\n");
+            });
+            pause(500);
+
+            BytecodeGenerator bytecodeGen = new BytecodeGenerator();
+            bytecodeGen.generate(ir);
+            List<String> bytecode = bytecodeGen.getBytecode();
+
+            Platform.runLater(() -> {
+                StringBuilder bytecodeOutput = new StringBuilder("=== BYTECODE ===\n\n");
+                for (int i = 0; i < bytecode.size(); i++) {
+                    bytecodeOutput.append(String.format("%3d: %s\n", i, bytecode.get(i)));
+                }
+                astOutput.setText(bytecodeOutput.toString());
+                compilationOutput.appendText("  ✓ Bytecode generation completed\n");
+                compilationOutput.appendText("  • Bytecode size: " + bytecode.size() + " instructions\n\n");
+            });
+            pause(500);
+
+            // ========== Phase 6: Execution ==========
             if (runAfterCompile) {
-                performOutput(code);
-                statusLabel.setText("Program executed successfully");
-            } else {
-                statusLabel.setText("Build successful");
+                Platform.runLater(() -> {
+                    compilePhaseLabel.setText("Execution");
+                    compilationProgress.setProgress(0.90);
+                    compilationOutput.appendText("[Phase 6] Executing Program...\n");
+                });
+                pause(500);
+
+                Interpreter interpreter = new Interpreter();
+                interpreter.execute(ast);
+
+                Platform.runLater(() -> {
+                    programOutput.setText("========== PROGRAM OUTPUT ==========\n\n" +
+                            interpreter.getOutput() +
+                            "\n=====================================\n");
+                    compilationOutput.appendText("  ✓ Program execution completed\n\n");
+                });
             }
 
-            compilePhaseLabel.setText("Idle");
-            isCompiling = false;
-        });
+            // Completion
+            long endTime = System.currentTimeMillis();
+            long executionTime = endTime - startTime;
+
+            Platform.runLater(() -> {
+                compilationProgress.setProgress(1.0);
+                compilationOutput.appendText("[SUCCESS] Compilation completed in " + executionTime + "ms\n");
+                timeLabel.setText(executionTime + "ms");
+                statusLabel.setText("Compilation successful");
+                compilePhaseLabel.setText("Idle");
+                isCompiling = false;
+            });
+
+        } catch (CompilerException e) {
+            Platform.runLater(() -> {
+                errorsOutput.setText("COMPILER ERROR:\n" + e.getMessage());
+                compilationOutput.appendText("  ✗ Compilation failed: " + e.getMessage() + "\n");
+                errorCountLabel.setText("Errors: 1");
+                statusLabel.setText("Compilation failed");
+                isCompiling = false;
+            });
+        }
     }
 
-    /**
-     * مرحلة: تحليل المعاني (Lexical Analysis)
-     */
-    private void performLexicalAnalysis(String code) {
-        StringBuilder tokens = new StringBuilder("=== TOKENS ===\n\n");
+    private String printAST(ASTNode node, int indent) {
+        String spaces = "  ".repeat(indent);
 
-        // تجزئة الكود البسيطة
-        Pattern tokenPattern = Pattern.compile(
-                "\"[^\"]*\"|'[^']*'|\\d+\\.\\d+|\\d+|[a-zA-Z_][a-zA-Z0-9_]*|[+\\-*/=();{}\\[\\],.]|\\s+"
-        );
-
-        Matcher matcher = tokenPattern.matcher(code);
-        int tokenCount = 0;
-
-        while (matcher.find()) {
-            String token = matcher.group();
-            if (!token.trim().isEmpty()) {
-                String type = classifyToken(token);
-                tokens.append(String.format("%-20s -> %s\n", token, type));
-                tokenCount++;
+        if (node instanceof Program) {
+            Program p = (Program) node;
+            StringBuilder sb = new StringBuilder(spaces + "Program\n");
+            for (ASTNode stmt : p.statements) {
+                sb.append(printAST(stmt, indent + 1));
             }
+            return sb.toString();
+        } else if (node instanceof VarDeclaration) {
+            VarDeclaration v = (VarDeclaration) node;
+            return spaces + "VarDeclaration(name: " + v.name + ")\n" + printAST(v.value, indent + 1);
+        } else if (node instanceof BinaryOp) {
+            BinaryOp b = (BinaryOp) node;
+            return spaces + "BinaryOp(" + b.operator + ")\n" +
+                    printAST(b.left, indent + 1) +
+                    printAST(b.right, indent + 1);
+        } else if (node instanceof NumberLiteral) {
+            NumberLiteral n = (NumberLiteral) node;
+            return spaces + "Number(" + n.value + ")\n";
+        } else if (node instanceof Variable) {
+            Variable v = (Variable) node;
+            return spaces + "Variable(" + v.name + ")\n";
+        } else if (node instanceof PrintStatement) {
+            PrintStatement p = (PrintStatement) node;
+            StringBuilder sb = new StringBuilder(spaces + "PrintStatement\n");
+            for (ASTNode arg : p.arguments) {
+                sb.append(printAST(arg, indent + 1));
+            }
+            return sb.toString();
+        } else if (node instanceof IfStatement) {
+            IfStatement i = (IfStatement) node;
+            StringBuilder sb = new StringBuilder(spaces + "IfStatement\n");
+            sb.append(spaces + "  Condition:\n").append(printAST(i.condition, indent + 2));
+            sb.append(spaces + "  Then:\n");
+            for (ASTNode stmt : i.thenBranch) sb.append(printAST(stmt, indent + 2));
+            if (!i.elseBranch.isEmpty()) {
+                sb.append(spaces + "  Else:\n");
+                for (ASTNode stmt : i.elseBranch) sb.append(printAST(stmt, indent + 2));
+            }
+            return sb.toString();
+        } else if (node instanceof WhileStatement) {
+            WhileStatement w = (WhileStatement) node;
+            StringBuilder sb = new StringBuilder(spaces + "WhileStatement\n");
+            sb.append(spaces + "  Condition:\n").append(printAST(w.condition, indent + 2));
+            sb.append(spaces + "  Body:\n");
+            for (ASTNode stmt : w.body) sb.append(printAST(stmt, indent + 2));
+            return sb.toString();
         }
 
-        tokens.append(String.format("\nTotal Tokens: %d\n", tokenCount));
-
-        int finalTokenCount = tokenCount;
-        Platform.runLater(() -> {
-            tokensOutput.setText(tokens.toString());
-            compilationOutput.appendText(String.format("  ✓ Found %d tokens\n", finalTokenCount));
-        });
+        return spaces + node.getClass().getSimpleName() + "\n";
     }
 
-    /**
-     * تصنيف نوع Token
-     */
-    private String classifyToken(String token) {
-        if (token.matches("\\d+")) return "NUMBER";
-        if (token.matches("\\d+\\.\\d+")) return "FLOAT";
-        if (token.matches("\".*\"|'.*'")) return "STRING";
-        if (token.matches("[+\\-*/=]")) return "OPERATOR";
-        if (token.matches("[();{}\\[\\],.]")) return "PUNCTUATION";
-        if (isKeyword(token)) return "KEYWORD";
-        if (token.matches("[a-zA-Z_][a-zA-Z0-9_]*")) return "IDENTIFIER";
-        return "UNKNOWN";
-    }
-
-    private boolean isKeyword(String token) {
-        String[] keywords = {"class", "public", "static", "void", "if", "else", "for", "while", "return", "int", "String"};
-        for (String kw : keywords) {
-            if (kw.equals(token)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * مرحلة: تحليل الصيغة (Syntax Analysis)
-     */
-    private void performSyntaxAnalysis(String code) {
-        StringBuilder ast = new StringBuilder("=== ABSTRACT SYNTAX TREE ===\n\n");
-        ast.append("Program\n");
-        ast.append("├── Classes: 1\n");
-        ast.append("│   └── Class: Main\n");
-        ast.append("│       ├── Modifiers: public\n");
-        ast.append("│       └── Methods: 1\n");
-        ast.append("│           └── Method: main\n");
-        ast.append("│               ├── Parameters: String[] args\n");
-        ast.append("│               └── Statements: 2\n");
-
-        Platform.runLater(() -> {
-            astOutput.setText(ast.toString());
-            compilationOutput.appendText("  ✓ Syntax analysis completed\n");
-        });
-    }
-
-    /**
-     * مرحلة: التحليل الدلالي (Semantic Analysis)
-     */
-    private void performSemanticAnalysis(String code) {
-        StringBuilder semantic = new StringBuilder("=== SEMANTIC ANALYSIS ===\n\n");
-        semantic.append("✓ Type checking: PASSED\n");
-        semantic.append("✓ Variable declarations: OK\n");
-        semantic.append("✓ Method signatures: OK\n");
-        semantic.append("✓ Scope analysis: OK\n");
-        semantic.append("✓ Dead code detection: NONE\n");
-
-        Platform.runLater(() -> {
-            compilationOutput.appendText("  ✓ Semantic analysis completed\n");
-        });
-    }
-
-    /**
-     * مرحلة: توليد الأكواد (Code Generation)
-     */
-    private void performCodeGeneration(String code) {
-        Platform.runLater(() -> {
-            compilationOutput.appendText("  ✓ Generated bytecode: 2.5 KB\n");
-            compilationOutput.appendText("  ✓ Optimizations applied\n");
-        });
-    }
-
-    /**
-     * إخراج النتيجة (Output Execution)
-     */
-    private void performOutput(String code) {
-        Platform.runLater(() -> {
-            programOutput.setText("========== PROGRAM OUTPUT ==========\n\n");
-            programOutput.appendText("Hello from Compiler!\n");
-            programOutput.appendText("Compilation Time: Success\n");
-            programOutput.appendText("Execution Status: ✓ COMPLETE\n\n");
-            programOutput.appendText("=====================================\n");
-        });
-    }
-
-    /**
-     * معالجة الكود الفارغ
-     */
     private void handleEmptyCode() {
         Platform.runLater(() -> {
             statusLabel.setText("Error: Code editor is empty");
@@ -413,22 +398,20 @@ public class HelloController implements Initializable {
         });
     }
 
-    /**
-     * مسح جميع المخرجات
-     */
     private void clearAllOutput() {
         Platform.runLater(() -> {
             compilationOutput.clear();
             tokensOutput.clear();
+            tokensOutput1.clear();
+            tokensOutput11.clear();
+            tokensOutput111.clear();
+            tokensOutput1111.clear();
             astOutput.clear();
             programOutput.clear();
             errorsOutput.clear();
         });
     }
 
-    /**
-     * تأخير بسيط
-     */
     private void pause(long ms) {
         try {
             Thread.sleep(ms);
