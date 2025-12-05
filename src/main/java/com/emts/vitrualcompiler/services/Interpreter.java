@@ -17,8 +17,8 @@ import java.util.Map;
  * *******************************************************************
  */
 public class Interpreter {
-    private Map<String, Integer> variables = new HashMap<>();
-    private StringBuilder output = new StringBuilder();
+    private final Map<String, Integer> variables = new HashMap<>();
+    private final StringBuilder output = new StringBuilder();
 
     public void execute(Program program) {
         for (ASTNode stmt : program.statements) {

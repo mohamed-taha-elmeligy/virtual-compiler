@@ -29,8 +29,6 @@
             <!-- Editor Toolbar -->
             <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 8 15; -fx-background-color: #34495e;">
                 <Button onAction="#handleNew" style="-fx-padding: 8 15; -fx-font-size: 11;" text="📄 New" />
-                <Button onAction="#handleOpen" style="-fx-padding: 8 15; -fx-font-size: 11;" text="📁 Open" />
-                <Button onAction="#handleSave" style="-fx-padding: 8 15; -fx-font-size: 11;" text="💾 Save" />
                 <Separator orientation="VERTICAL" />
                 <Button onAction="#handleRun" style="-fx-padding: 8 20; -fx-font-size: 12; -fx-background-color: #27ae60; -fx-text-fill: white;" text="▶  Run" />
                 <Button onAction="#handleStop" style="-fx-padding: 8 20; -fx-font-size: 12; -fx-background-color: #e74c3c; -fx-text-fill: white;" text="⏹  Stop" />
@@ -50,8 +48,8 @@
                         <VBox prefHeight="400.0" spacing="0" style="-fx-padding: 0;">
                             <!-- Line Numbers + Code -->
                             <HBox prefHeight="488.0" prefWidth="516.0" spacing="0" VBox.vgrow="ALWAYS">
-                                <TextArea fx:id="lineNumbers" editable="false" prefWidth="45" style="-fx-padding: 10 5; -fx-control-inner-background: #2c3e50; -fx-text-fill: #7f8c8d; -fx-font-family: 'Courier New'; -fx-font-size: 12;" wrapText="false" />
-                                <TextArea fx:id="codeEditor" style="-fx-padding: 10; -fx-control-inner-background: #1e1e1e; -fx-text-fill: #ecf0f1; -fx-font-family: 'Courier New'; -fx-font-size: 12;" wrapText="false" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" />
+                                <TextArea fx:id="lineNumbers" editable="false" prefWidth="45" style="-fx-padding: 10 5; -fx-control-inner-background: #2c3e50; -fx-text-fill: #7f8c8d; -fx-font-family: 'Courier New'; -fx-font-size: 15;" wrapText="false" />
+                                <TextArea fx:id="codeEditor" style="-fx-padding: 10; -fx-control-inner-background: #1e1e1e; -fx-text-fill: #ecf0f1; -fx-font-family: 'Courier New'; -fx-font-size: 15;" text="var x = 10;&#10;var y = 20;&#10;var sum = x + y;&#10;print(sum);&#10;&#10;if (x &lt; y) {&#10;    print(100);&#10;}&#10;&#10;if (y==0){ print(y);}&#10;else{ print(x);}&#10;&#10;&#10;var i = 0;&#10;while(i&lt;=100){&#10;print(i);&#10;i = i+1;&#10;&#10;}" wrapText="false" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" />
                             </HBox>
 
                             <!-- Editor Status Bar -->
@@ -73,20 +71,14 @@
                     <!-- Phase 1: Lexical Analysis -->
                     <Tab closable="false" text="Tokens (Lexical)">
                         <VBox spacing="5" style="-fx-padding: 10;">
-                            <TextArea fx:id="tokensOutput" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #2ecc71; -fx-font-family: 'Courier New'; -fx-font-size: 11;" wrapText="true" VBox.vgrow="ALWAYS" />
+                            <TextArea fx:id="tokensOutput" editable="false" prefHeight="584.0" prefWidth="655.0" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #2ecc71; -fx-font-family: 'Courier New'; -fx-font-size: 14;" wrapText="true" VBox.vgrow="ALWAYS" />
                         </VBox>
                     </Tab>
 
                     <!-- Phase 2: Syntax Analysis -->
                     <Tab closable="false" text="AST (Syntax)">
                         <VBox spacing="5" style="-fx-padding: 10;">
-                            <TextArea fx:id="tokensOutput11" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #3498db; -fx-font-family: 'Courier New'; -fx-font-size: 11;" wrapText="true" VBox.vgrow="ALWAYS" />
-                        </VBox>
-                    </Tab>
-
-                    <Tab closable="false" text="Symbol Table">
-                        <VBox spacing="5" style="-fx-padding: 10;">
-                            <TextArea fx:id="tokensOutput1" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #2ecc71; -fx-font-family: 'Courier New'; -fx-font-size: 11;" wrapText="true" VBox.vgrow="ALWAYS" />
+                            <TextArea fx:id="tokensOutput11" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #3498db; -fx-font-family: 'Courier New'; -fx-font-size: 14;" wrapText="true" VBox.vgrow="ALWAYS" />
                         </VBox>
                     </Tab>
 
@@ -94,28 +86,28 @@
                     <!-- Phase 3: Semantic Analysis -->
                     <Tab closable="false" text="Semantic">
                         <VBox spacing="5" style="-fx-padding: 10;">
-                            <TextArea fx:id="tokensOutput111" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #f39c12; -fx-font-family: 'Courier New'; -fx-font-size: 11;" wrapText="true" VBox.vgrow="ALWAYS" />
+                            <TextArea fx:id="tokensOutput111" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #f39c12; -fx-font-family: 'Courier New'; -fx-font-size: 14;" wrapText="true" VBox.vgrow="ALWAYS" />
                         </VBox>
                     </Tab>
 
                     <!-- Phase 4: Intermediate Representation -->
                     <Tab closable="false" text="IR (Three-Address)">
                         <VBox spacing="5" style="-fx-padding: 10;">
-                            <TextArea fx:id="tokensOutput1111" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #9b59b6; -fx-font-family: 'Courier New'; -fx-font-size: 11;" wrapText="true" VBox.vgrow="ALWAYS" />
+                            <TextArea fx:id="tokensOutput1111" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #9b59b6; -fx-font-family: 'Courier New'; -fx-font-size: 14;" wrapText="true" VBox.vgrow="ALWAYS" />
                         </VBox>
                     </Tab>
 
                     <!-- Phase 5: Bytecode -->
                     <Tab closable="false" text="Bytecode">
                         <VBox spacing="5" style="-fx-padding: 10;">
-                            <TextArea fx:id="astOutput" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #e74c3c; -fx-font-family: 'Courier New'; -fx-font-size: 11;" wrapText="true" VBox.vgrow="ALWAYS" />
+                            <TextArea fx:id="astOutput" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #e74c3c; -fx-font-family: 'Courier New'; -fx-font-size: 14;" wrapText="true" VBox.vgrow="ALWAYS" />
                         </VBox>
                     </Tab>
 
                     <!-- Phase 6: Program Output -->
                     <Tab closable="false" text="Program Output">
                         <VBox prefHeight="348.0" prefWidth="675.0" spacing="5" style="-fx-padding: 10;">
-                            <TextArea fx:id="programOutput" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #1abc9c; -fx-font-family: 'Courier New'; -fx-font-size: 12;" wrapText="true" VBox.vgrow="ALWAYS" />
+                            <TextArea fx:id="programOutput" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #1abc9c; -fx-font-family: 'Courier New'; -fx-font-size: 14;" wrapText="true" VBox.vgrow="ALWAYS" />
                         </VBox>
                     </Tab>
 
@@ -123,14 +115,14 @@
                     <Tab closable="false" text="📋 Build Log">
                         <VBox spacing="5" style="-fx-padding: 10;">
                             <ProgressBar fx:id="compilationProgress" prefHeight="8.0" progress="0" style="-fx-accent: #27ae60;" />
-                            <TextArea fx:id="compilationOutput" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #ecf0f1; -fx-font-family: 'Courier New'; -fx-font-size: 11;" wrapText="true" VBox.vgrow="ALWAYS" />
+                            <TextArea fx:id="compilationOutput" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #ecf0f1; -fx-font-family: 'Courier New'; -fx-font-size: 14;" wrapText="true" VBox.vgrow="ALWAYS" />
                         </VBox>
                     </Tab>
 
                     <!-- Errors -->
                     <Tab closable="false" text="❌ Errors">
                         <VBox spacing="5" style="-fx-padding: 10;">
-                            <TextArea fx:id="errorsOutput" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #e74c3c; -fx-font-family: 'Courier New'; -fx-font-size: 11;" wrapText="true" VBox.vgrow="ALWAYS" />
+                            <TextArea fx:id="errorsOutput" editable="false" style="-fx-control-inner-background: #1e1e1e; -fx-text-fill: #e74c3c; -fx-font-family: 'Courier New'; -fx-font-size: 14;" wrapText="true" VBox.vgrow="ALWAYS" />
                         </VBox>
                     </Tab>
                 </TabPane>

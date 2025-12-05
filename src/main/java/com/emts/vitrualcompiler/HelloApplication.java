@@ -24,13 +24,12 @@ public class HelloApplication extends Application {
         stage.setMaximized(true);
         stage.setTitle("Compiler IDE - Professional");
         stage.setScene(scene);
-        // حجم النافذة
+
         stage.setWidth(1400);
         stage.setHeight(900);
         stage.setMinWidth(1000);
         stage.setMinHeight(700);
 
-        // مركز النافذة على الشاشة
         centerWindowOnScreen(stage);
         stage.show();
     }

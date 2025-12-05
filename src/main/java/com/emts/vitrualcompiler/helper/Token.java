@@ -18,7 +18,8 @@ public class Token {
         ASSIGN, PLUS, MINUS, MUL, DIV, MOD,
         EQ, NE, LT, GT, LE, GE,
         LPAREN, RPAREN, LBRACE, RBRACE,
-        SEMICOLON, EOF
+        SEMICOLON, EOF, KEYWORD, IDENTIFIER,
+        LITERALS, OPERATOR, DELIMITER
     }
 
     public Type type;

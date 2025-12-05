@@ -17,7 +17,7 @@ import java.util.List;
  * *******************************************************************
  */
 public class IRGenerator {
-    private List<IRInstruction> instructions = new ArrayList<>();
+    private final List<IRInstruction> instructions = new ArrayList<>();
     private int tempCounter = 0;
 
     public void generate(Program program) {

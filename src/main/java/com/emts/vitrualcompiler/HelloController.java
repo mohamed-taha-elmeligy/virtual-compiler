@@ -11,7 +11,6 @@ import javafx.scene.control.*;
 import java.net.URL;
 import java.util.*;
 
-// Import Classes من SimpleCompiler
 import java.util.List;
 
 public class HelloController implements Initializable {
@@ -23,7 +22,6 @@ public class HelloController implements Initializable {
     // Output Components
     @FXML private TextArea compilationOutput;
     @FXML private TextArea tokensOutput;
-    @FXML private TextArea tokensOutput1;      // Symbol Table
     @FXML private TextArea tokensOutput11;     // Syntax (AST)
     @FXML private TextArea tokensOutput111;    // Semantic
     @FXML private TextArea tokensOutput1111;   // Intermediate (IR)
@@ -102,7 +100,6 @@ public class HelloController implements Initializable {
     private void setupOutputAreas() {
         compilationOutput.setEditable(false);
         tokensOutput.setEditable(false);
-        tokensOutput1.setEditable(false);
         tokensOutput11.setEditable(false);
         tokensOutput111.setEditable(false);
         tokensOutput1111.setEditable(false);
@@ -402,7 +399,6 @@ public class HelloController implements Initializable {
         Platform.runLater(() -> {
             compilationOutput.clear();
             tokensOutput.clear();
-            tokensOutput1.clear();
             tokensOutput11.clear();
             tokensOutput111.clear();
             tokensOutput1111.clear();
