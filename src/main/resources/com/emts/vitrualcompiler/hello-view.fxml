@@ -48,7 +48,7 @@
                         <VBox prefHeight="400.0" spacing="0" style="-fx-padding: 0;">
                             <!-- Line Numbers + Code -->
                             <HBox prefHeight="488.0" prefWidth="516.0" spacing="0" VBox.vgrow="ALWAYS">
-                                <TextArea fx:id="lineNumbers" editable="false" prefWidth="45" style="-fx-padding: 10 5; -fx-control-inner-background: #2c3e50; -fx-text-fill: #7f8c8d; -fx-font-family: 'Courier New'; -fx-font-size: 15;" wrapText="false" />
+                                <TextArea fx:id="lineNumbers" editable="false" prefWidth="45" style="-fx-padding: 10; -fx-control-inner-background: #2c3e50; -fx-text-fill: #7f8c8d; -fx-font-family: 'Courier New'; -fx-font-size: 15;" wrapText="false" />
                                 <TextArea fx:id="codeEditor" style="-fx-padding: 10; -fx-control-inner-background: #1e1e1e; -fx-text-fill: #ecf0f1; -fx-font-family: 'Courier New'; -fx-font-size: 15;" text="var x = 10;&#10;var y = 20;&#10;var sum = x + y;&#10;print(sum);&#10;&#10;if (x &lt; y) {&#10;    print(100);&#10;}&#10;&#10;if (y==0){ print(y);}&#10;else{ print(x);}&#10;&#10;&#10;var i = 0;&#10;while(i&lt;=100){&#10;print(i);&#10;i = i+1;&#10;&#10;}" wrapText="false" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" />
                             </HBox>
 

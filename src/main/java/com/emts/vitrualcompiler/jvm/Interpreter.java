@@ -1,4 +1,4 @@
-package com.emts.vitrualcompiler.services;
+package com.emts.vitrualcompiler.jvm;
 
 import com.emts.vitrualcompiler.syntax.*;
 

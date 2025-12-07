@@ -24,6 +24,8 @@ public class Lexer {
     private int pos = 0;
     private int line = 1;
     private final List<Token> tokens = new ArrayList<>();
+    private final List<Token> printTokens = new ArrayList<>();
+
 
     public Lexer(String input) {
         this.input = input;
@@ -75,6 +77,8 @@ public class Lexer {
             sb.append(input.charAt(pos++));
         }
         tokens.add(new Token(Token.Type.NUMBER, sb.toString(), startLine));
+        printTokens.add(new Token(Token.Type.IDENTIFIER, sb.toString(), startLine));
+
     }
 
     private void readIdentifier() {
@@ -94,6 +98,9 @@ public class Lexer {
             default -> Token.Type.ID;
         };
         tokens.add(new Token(type, text, startLine));
+        if(type == (Token.Type.ID))
+            printTokens.add(new Token(Token.Type.LITERALS, text, startLine));
+        else {printTokens.add(new Token(Token.Type.KEYWORD, text, startLine));}
     }
 
     private boolean readOperator() {
@@ -112,13 +119,14 @@ public class Lexer {
             };
             if (type != null) {
                 tokens.add(new Token(type, two, startLine));
+                printTokens.add(new Token(Token.Type.OPERATOR, two, startLine));
                 pos += 2;
                 return true;
             }
         }
 
         // Single-character operators
-        Token.Type type = switch (c) {
+        Token.Type typeOperator = switch (c) {
             case '=' -> Token.Type.ASSIGN;
             case '+' -> Token.Type.PLUS;
             case '-' -> Token.Type.MINUS;
@@ -127,6 +135,10 @@ public class Lexer {
             case '%' -> Token.Type.MOD;
             case '<' -> Token.Type.LT;
             case '>' -> Token.Type.GT;
+            default -> null;
+        };
+
+        Token.Type typeDelimiter = switch (c) {
             case '(' -> Token.Type.LPAREN;
             case ')' -> Token.Type.RPAREN;
             case '{' -> Token.Type.LBRACE;
@@ -135,8 +147,16 @@ public class Lexer {
             default -> null;
         };
 
-        if (type != null) {
-            tokens.add(new Token(type, "" + c, startLine));
+        if (typeOperator != null) {
+            tokens.add(new Token(typeOperator, "" + c, startLine));
+            printTokens.add(new Token(Token.Type.OPERATOR, ""+ c, startLine));
+            pos++;
+            return true;
+        }
+
+        if (typeDelimiter != null) {
+            tokens.add(new Token(typeDelimiter, "" + c, startLine));
+            printTokens.add(new Token(Token.Type.DELIMITER, ""+ c, startLine));
             pos++;
             return true;
         }
@@ -147,11 +167,9 @@ public class Lexer {
         return pos + 1 < input.length() ? input.charAt(pos + 1) : '\0';
     }
 
-    public StringBuilder printTokens() {
-        StringBuilder output = new StringBuilder("=== TOKENS ===\n\n");
-        for (Token token : tokens) {
-            output.append(token).append("\n");
-        }
-        return output;
+    public List<Token> getPrintTokens() {
+        printTokens.add(new Token(Token.Type.EOF, "", line));
+        return printTokens;
     }
+
 }

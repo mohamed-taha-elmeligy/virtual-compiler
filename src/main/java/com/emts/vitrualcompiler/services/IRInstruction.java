@@ -12,10 +12,10 @@ package com.emts.vitrualcompiler.services;
  * *******************************************************************
  */
 public class IRInstruction {
-    String op;
-    String arg1;
-    String arg2;
-    String result;
+    public String op;
+    public String arg1;
+    public String arg2;
+    public String result;
 
     IRInstruction(String op, String arg1, String arg2, String result) {
         this.op = op;

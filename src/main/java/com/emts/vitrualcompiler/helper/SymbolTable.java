@@ -20,7 +20,6 @@ import java.util.Map;
 public class SymbolTable {
     public static class Symbol {
         String name;
-        Object value;
         boolean initialized;
         int line;
 

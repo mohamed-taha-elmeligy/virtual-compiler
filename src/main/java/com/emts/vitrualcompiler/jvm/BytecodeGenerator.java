@@ -1,4 +1,6 @@
-package com.emts.vitrualcompiler.services;
+package com.emts.vitrualcompiler.jvm;
+
+import com.emts.vitrualcompiler.services.IRInstruction;
 
 import java.util.ArrayList;
 import java.util.List;

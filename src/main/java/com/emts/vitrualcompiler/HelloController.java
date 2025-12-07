@@ -2,6 +2,8 @@ package com.emts.vitrualcompiler;
 
 import com.emts.vitrualcompiler.exceptions.CompilerException;
 import com.emts.vitrualcompiler.helper.Token;
+import com.emts.vitrualcompiler.jvm.BytecodeGenerator;
+import com.emts.vitrualcompiler.jvm.Interpreter;
 import com.emts.vitrualcompiler.services.*;
 import com.emts.vitrualcompiler.syntax.*;
 import javafx.application.Platform;
@@ -192,10 +194,11 @@ public class HelloController implements Initializable {
 
             Lexer lexer = new Lexer(code);
             tokens = lexer.tokenize();
+            List<Token> printTokens = lexer.getPrintTokens();
 
             Platform.runLater(() -> {
                 StringBuilder tokenOutput = new StringBuilder("=== TOKENS ===\n\n");
-                for (Token t : tokens) {
+                for (Token t : printTokens) {
                     if (t.type != Token.Type.EOF) {
                         tokenOutput.append(t).append("\n");
                     }
